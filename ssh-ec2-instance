@@ -1,4 +1,13 @@
 #!/bin/sh
-# Pass as the first argument the path to the private key
-ip=`scripts-managment-ec2-instances/data-ec2-instance.sh | grep PublicIpAddress | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"`
-ssh -i $1 admin@$ip
+# Pass as the first argument the path to the private key and the second the username
+
+# Retrieve IP from AWS
+IP=`scripts-managment-ec2-instances/data-ec2-instance.sh | grep PublicIpAddress | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"`
+
+# Check if IP is a know host, if not add it to list of known_hosts
+if [ -z "$(ssh-keygen -F $IP)" ]; then
+  ssh-keyscan -H $IP >> ~/.ssh/known_hosts
+fi
+
+# ssh into the machine
+ssh -i $1 $2@$IP
